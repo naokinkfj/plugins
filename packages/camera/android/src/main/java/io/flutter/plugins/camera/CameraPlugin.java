@@ -300,6 +300,9 @@ public class CameraPlugin implements MethodCallHandler {
       try {
         int minHeight;
         switch (resolutionPreset) {
+          case "photo":
+            minHeight = 720;
+            break;
           case "high":
             minHeight = 720;
             break;

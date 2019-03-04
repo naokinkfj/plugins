@@ -231,9 +231,11 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
     presetIndex = 0;
   } else if ([resolutionPreset isEqualToString:@"medium"]) {
     presetIndex = 2;
+  } else if ([resolutionPreset isEqualToString:@"photo"]) {
+    presetIndex = 1000;
   } else {
     NSAssert([resolutionPreset isEqualToString:@"low"], @"Unknown resolution preset %@",
-             resolutionPreset);
+            resolutionPreset);
     presetIndex = 3;
   }
 
@@ -241,7 +243,7 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
     case 0:
       if ([_captureSession canSetSessionPreset:AVCaptureSessionPreset3840x2160]) {
         _captureSession.sessionPreset = AVCaptureSessionPreset3840x2160;
-        _previewSize = CGSizeMake(3840, 2160);
+        _previewSize = [self captureResolution];
         break;
       }
     case 1:
@@ -268,6 +270,12 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
         _previewSize = CGSizeMake(352, 288);
         break;
       }
+    case 1000:
+      if ([_captureSession canSetSessionPreset:AVCaptureSessionPresetPhoto]) {
+        _captureSession.sessionPreset = AVCaptureSessionPresetPhoto;
+        _previewSize = [self captureResolution];
+        break;
+      }
     default: {
       NSException *exception = [NSException
           exceptionWithName:@"NoAvailableCaptureSessionException"
@@ -276,6 +284,12 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
       @throw exception;
     }
   }
+}
+
+- (CGSize)captureResolution {
+  CMFormatDescriptionRef formatDescription = _captureDevice.activeFormat.formatDescription;
+  CMVideoDimensions dimensions = CMVideoFormatDescriptionGetDimensions(formatDescription);
+  return CGSizeMake(dimensions.width, dimensions.height);
 }
 
 - (void)captureOutput:(AVCaptureOutput *)output
